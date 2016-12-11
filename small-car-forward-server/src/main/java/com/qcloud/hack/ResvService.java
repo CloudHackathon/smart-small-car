@@ -90,11 +90,11 @@ public class ResvService {
                                 try {
                                     outVideoServer = new ServerSocket(Constant.port.video_out);
                                     System.out.println("video topic server started");
-                                    while(true){
+                                    while (true) {
                                         try {
                                             outs.add(outVideoServer.accept());
                                             System.out.println("video user in");
-                                        } catch (IOException e){
+                                        } catch (IOException e) {
 
                                         }
                                     }
@@ -103,26 +103,29 @@ public class ResvService {
                                 }
                             }
                         }).start();
-                        Socket socket = videoServer.accept();
-                        System.out.println("video produce in");
-                        InputStream in = socket.getInputStream();
-                        byte [] jpg = new byte[100 * 1024];
-                        int len;
-                        while((len = in.read(jpg)) != -1){
-                            try{
-                                for(Socket viewClient : outs){
-                                    if(viewClient.isClosed() || !viewClient.isConnected()){
-                                        outs.remove(viewClient);
+                        while (true) {
+                            Socket socket = videoServer.accept();
+                            System.out.println("video produce in");
+                            InputStream in = socket.getInputStream();
+                            byte[] jpg = new byte[100 * 1024];
+                            int len;
+                            try {
+                                while ((len = in.read(jpg)) != -1) {
+                                    for (Socket viewClient : outs) {
+                                        if (viewClient.isClosed() || !viewClient.isConnected()) {
+                                            outs.remove(viewClient);
+                                        }
+                                        // 向观看直播的用户广播
+                                        OutputStream out = viewClient.getOutputStream();
+                                        out.write(jpg, 0, len);
+                                        out.flush();
                                     }
-                                    // 向观看直播的用户广播
-                                    OutputStream out = viewClient.getOutputStream();
-                                    out.write(jpg,0,len);
-                                    out.flush();
                                 }
-                            } catch (IOException e){
+                            } catch (IOException e) {
 
                             }
                         }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -155,7 +158,7 @@ public class ResvService {
                         break;
                     }
                     // 发送声音
-                    if(inst != last){
+                    if (inst != last) {
                         songOutput.write(Constant.songMap.get(inst).getBytes());
                         pcOutput.write(inst);
                         last = inst;
@@ -166,7 +169,7 @@ public class ResvService {
                 songClient.close();
                 ctrlClient.close();
             } catch (Exception e) {
-                System.out.println("链接断掉:"+e.getMessage());
+                System.out.println("链接断掉:" + e.getMessage());
                 e.printStackTrace();
             }
 
