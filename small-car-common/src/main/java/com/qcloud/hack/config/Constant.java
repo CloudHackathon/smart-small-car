@@ -30,6 +30,8 @@ public class Constant {
         public static final int song        = 8083;
         public static final int gesture     = 8080;
         public static final int instruct    = 8081;
+        public static final int video_in    = 8084;
+        public static final int video_out   = 8085;
     }
 
     public static Map<Integer,byte[]> instructMap = new HashMap<Integer, byte[]>();

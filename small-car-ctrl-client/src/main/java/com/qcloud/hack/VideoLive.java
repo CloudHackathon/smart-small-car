@@ -1,12 +1,19 @@
 package com.qcloud.hack;
 
+import com.qcloud.hack.config.Constant;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Queue;
 
 /**
  * @author lvyahui (lvyahui8@gmail.com,lvyahui8@126.com)
@@ -16,7 +23,6 @@ public class VideoLive {
 
     public static final int WIDTH = 400;
     public static final int HEIGHT = 400;
-
     private static JFrame buildFrame() {
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -38,6 +44,13 @@ public class VideoLive {
 
         jframe.add(jpanel);
 
+       // RtmpClient rtmpClient = new DefaultRtmpClient("rtmp://5594.livepush.myqcloud.com/live/5594_358d9f6f49?bizid=5594&txSecret=7bf9b77cfa6868288f9f5046f94383d2&txTime=584D77FF");
+       // try {
+       //     rtmpClient.connect();
+       // } catch (IOException e) {
+       //     e.printStackTrace();
+       // }
+        final Queue<byte[]> jpgs = new ArrayDeque<byte[]>();
         while (true) {
             long time ;
             long span;
@@ -195,9 +208,17 @@ public class VideoLive {
                                         // 显示图像
                                         {
                                             count++;
-
                                             BufferedImage image = ImageIO.read(new ByteArrayInputStream(jpg_buf));
                                             jpanel.setImage(image);
+                                            //String file = "D:/tmp/video_in/"+ count + ".jpg";
+                                            //OutputStream out = new FileOutputStream(file);
+                                            //out.write(jpg_buf);
+                                            //out.flush();
+                                            //rtmpClient.play(file,null);
+                                            if(jpgs.size() < 10000){
+                                                jpgs.add(Arrays.copyOf(jpg_buf,jpg_buf.length));
+                                            }
+
                                         }
                                     } else {
                                         if (buffer[i] != (byte) 0xFF)
@@ -217,6 +238,41 @@ public class VideoLive {
                 urlConn.disconnect();
                 ex.printStackTrace();
             }
+
+
+            new Thread(new Runnable() {
+                public void run() {
+                    try{
+                        Socket videoOut;
+                        OutputStream videoOutStream;
+                        try {
+                            videoOut = new Socket(Constant.host.server,Constant.port.video_in);
+                            videoOutStream = videoOut.getOutputStream();
+                            System.out.println("connected video server");
+                            if(videoOutStream != null){
+                                while(true){
+                                    if(jpgs.size() <= 0){
+                                        Thread.sleep(1000);
+                                    }
+                                    byte [] jpg_buf = jpgs.poll();
+                                    try {
+                                        System.out.println("send");
+                                        videoOutStream.write(jpg_buf);
+                                        videoOutStream.flush();
+                                    } catch (Exception e){
+
+                                    }
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    } catch (Exception e){
+
+                    }
+                }
+            }).start();
         }
 
     }

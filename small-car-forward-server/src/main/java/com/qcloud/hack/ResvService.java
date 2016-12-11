@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lvyahui (lvyahui8@gmail.com,lvyahui8@126.com)
@@ -74,6 +76,58 @@ public class ResvService {
 //            gestureServer.close();
 //            songServer.close();
 //            issuedServer.close();
+
+            // 视频转发
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        ServerSocket videoServer = new ServerSocket(Constant.port.video_in);
+                        System.out.println("video server started");
+                        final List<Socket> outs = new ArrayList<Socket>();
+                        new Thread(new Runnable() {
+                            public void run() {
+                                ServerSocket outVideoServer;
+                                try {
+                                    outVideoServer = new ServerSocket(Constant.port.video_out);
+                                    System.out.println("video topic server started");
+                                    while(true){
+                                        try {
+                                            outs.add(outVideoServer.accept());
+                                            System.out.println("video user in");
+                                        } catch (IOException e){
+
+                                        }
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
+                        Socket socket = videoServer.accept();
+                        System.out.println("video produce in");
+                        InputStream in = socket.getInputStream();
+                        byte [] jpg = new byte[100 * 1024];
+                        int len;
+                        while((len = in.read(jpg)) != -1){
+                            try{
+                                for(Socket viewClient : outs){
+                                    if(viewClient.isClosed() || !viewClient.isConnected()){
+                                        outs.remove(viewClient);
+                                    }
+                                    // 向观看直播的用户广播
+                                    OutputStream out = viewClient.getOutputStream();
+                                    out.write(jpg,0,len);
+                                    out.flush();
+                                }
+                            } catch (IOException e){
+
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
