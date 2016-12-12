@@ -12,7 +12,6 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Queue;
 
 /**
@@ -212,12 +211,12 @@ public class VideoLive {
                                             jpanel.setImage(image);
                                             //String file = "D:/tmp/video_in/"+ count + ".jpg";
                                             //OutputStream out = new FileOutputStream(file);
-                                            //out.write(jpg_buf);
+                                            //out.writ  e(jpg_buf);
                                             //out.flush();
                                             //rtmpClient.play(file,null);
-                                            if(jpgs.size() < 10000){
-                                                jpgs.add(Arrays.copyOf(jpg_buf,jpg_buf.length));
-                                            }
+                                           // if(jpgs.size() < 10000){
+                                           //     jpgs.add(Arrays.copyOf(jpg_buf,jpg_buf.length));
+                                           // }
 
                                         }
                                     } else {
