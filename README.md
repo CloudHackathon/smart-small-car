@@ -6,6 +6,6 @@
 
 ## Committers
 
-* Samlv ([@lvyahui8](http://twitter.com/lvyahui8))
-* Geeklan ([@lanskytian](http://twitter.com/lanskytian))
+* Samlv ([@lvyahui8](https://github.com/lvyahui8))
+* Geeklan ([@lanskytian](https://github.com/lanskytian))
 * Fayren ([@xiaofeige](https://github.com/xiaofeige))
